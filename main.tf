@@ -37,14 +37,14 @@ resource "aws_security_group" "kubernetes" {
   description = "Kubernetes security group"
   vpc_id                  = aws_vpc.kubernetes.id
 
-  ingress {
+  ingress { #Rule 1
    from_port   = 0
     to_port     = 65535
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  egress {
+  egress { #Rule 2
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
