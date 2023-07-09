@@ -1,3 +1,14 @@
+resource "aws_vpc" "kubernetes" {
+  cidr_block = "10.240.0.0/16"
+}
+
+resource "aws_subnet" "kubernetes" {
+  vpc_id                  = aws_vpc.kubernetes.id
+  cidr_block              = "10.240.0.0/24"
+  availability_zone       = "us-east-1a"
+  map_public_ip_on_launch = true
+}
+
 resource "aws_instance" "controller" {
   count         = 3
   ami           = "ami-0c94855ba95c71c99"  # Ubuntu 20.04 LTS
@@ -13,29 +24,19 @@ resource "aws_instance" "controller" {
     volume_size = 200
   }
 
-  network_interface {
-      device_index = 1
-      network_interface_id = "nic"
-  }
-
   ebs_block_device {
     device_name = "/dev/sda1"
     volume_size = 200
   }
 
   iam_instance_profile = "controller-profile"
-
-}
-
-resource "aws_subnet" "kubernetes" {
-  vpc_id                  = aws_vpc.kubernetes.id
-  cidr_block              = "10.240.0.0/24"
-  availability_zone       = var.region
 }
 
 resource "aws_security_group" "kubernetes" {
-  name        = "k8s_the_hard_way"
+  name        = var.name
   description = "Kubernetes security group"
+  vpc_id                  = aws_vpc.kubernetes.id
+
   ingress {
    from_port   = 0
     to_port     = 65535
@@ -51,9 +52,6 @@ resource "aws_security_group" "kubernetes" {
   }
 }
 
-resource "aws_vpc" "kubernetes" {
-  cidr_block = "10.240.0.0/16"
-}
 
 resource "aws_iam_instance_profile" "controller-profile" {
   name = "controller-profile"
